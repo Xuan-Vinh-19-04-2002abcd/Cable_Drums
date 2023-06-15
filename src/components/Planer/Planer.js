@@ -1,0 +1,145 @@
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
+import CableDrumRequest from './FormRequest';
+import API_URL from '../../Config/Config';
+import LogoutButton from '../Button/Signup';
+
+const Planner = () => {
+  const [contracts, setContracts] = useState([]);
+  const [vendors, setVendors] = useState([]);
+  const [projectContractors, setProjectContractors] = useState([]);
+  const [showModel, setShowModel] = useState(false);
+  const [showCableDrumRequest, setShowCableDrumRequest] = useState(false);
+  const loggedInUser = JSON.parse(localStorage.getItem('loggedInUser'));
+  const token = localStorage.getItem('token');
+  const config = {
+    headers: {
+      Authorization: `Bearer ${token}`
+    }
+  };
+  useEffect(() => {
+    const fetchContracts = async () => {
+      try {
+
+        const response = await axios.get(`${API_URL}/contracts`,config);
+        console.log(response.data);
+        setContracts(response.data);
+      } catch (error) {
+        console.error('Error fetching contracts:', error);
+      }
+    };
+
+    const fetchUsers = async () => {
+      try {
+        const response = await axios.get(`${API_URL}/users`,config);
+        console.log(response.data);
+        const filteredVendors = response.data.filter((user) => user.role === 'Vendor');
+        setVendors(filteredVendors);
+        const filteredProjectContractors = response.data.filter((user) => user.role === 'Contractor');
+        setProjectContractors(filteredProjectContractors);
+      } catch (error) {
+        console.error('Error fetching users:', error);
+      }
+    };
+    fetchContracts();
+    fetchUsers();
+
+  }, []);
+
+  useEffect(() => {
+    const updatedContracts = contracts.map((contract) => {
+      const vendor = vendors.find((vendor) => vendor.id === contract.supplyVendorId);
+      return {
+        ...contract,
+        vendor: vendor ? vendor.username : null,
+      };
+    });
+    setContracts(updatedContracts);
+  }, [vendors]);
+
+  const handleCreateRequest = () => {
+    setShowCableDrumRequest(true);
+  };
+
+  const handleCloseModal = () => {
+    setShowCableDrumRequest(false);
+  };
+
+  return (
+    <div className="container mx-auto px-4 py-8 min-h-screen bg-black opacity-90">
+      <div className='flex justify-between mb-4'>
+          <div>
+            <div className="w-24 h-24  rounded-full bg-cyan-800 mb-2"></div>
+            <p className='px-2 py-2 rounded-2xl font-bold text-white '>{loggedInUser.username}</p>
+          </div>
+       <div> <LogoutButton/></div>
+      </div>
+      <div className="w-full mb-8">
+        <h2 className="text-2xl font-bold mb-4 text-center">All Your Contracts</h2>
+        <div className="overflow-x-auto">
+          <table className="w-[80%] border border-gray-300 mx-auto shadow-md">
+            <thead>
+              <tr className="bg-gray-200">
+                <th className="py-2 px-4 border">Start Date</th>
+                <th className="py-2 px-4 border">End Date</th>
+                <th className="py-2 px-4 border">Amount of Cable Drum</th>
+                <th className="py-2 px-4 border">Vendor</th>
+              </tr>
+            </thead>
+            <tbody>
+              {contracts.map((contract) => (
+                <tr key={contract.id}>
+                  <td className="py-2 px-4 border text-center text-white">{contract.startDate}</td>
+                  <td className="py-2 px-4 border text-center text-white">{contract.endDate}</td>
+                  <td className="py-2 px-4 border text-center text-white">{contract.contractAmount}</td>
+                  <td className="py-2 px-4 border text-center text-white">{contract.username}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {showCableDrumRequest && (
+        <div className="fixed top-0 left-0 w-full h-full flex justify-center items-center bg-gray-500 bg-opacity-75">
+          <div className="bg-white p-4 rounded shadow">
+            <button
+              className="absolute top-2 right-2 text-gray-500 hover:text-gray-700"
+              onClick={handleCloseModal}
+            >
+              <span className="sr-only">Close</span>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-5 w-5"
+                viewBox="0 0 20 20"
+                fill="currentColor"
+              >
+                <path
+                  fillRule="evenodd"
+                  d="M5.293 4.293a1 1 0 011.414 0L10 8.586l3.293-3.293a1 1 0 111.414 1.414L11.414 10l3.293 3.293a1 1 0 01-1.414 1.414L10 11.414l-3.293 3.293a1 1 0 01-1.414-1.414L8.586 10 5.293 6.707a1 1 0 010-1.414z"
+                  clipRule="evenodd"
+                />
+              </svg>
+            </button>
+          
+            <CableDrumRequest vendors={vendors} projectContractors={projectContractors} handleCreateClose={handleCloseModal} setShowModel={setShowModel}/>
+          </div>
+        </div>
+      )}
+
+      {!showCableDrumRequest && (
+          <button className="bg-black hover:bg-red-600 bg-cyan-800   text-white font-bold py-2 px-4 rounded mt-4 ml-36 border border-dashed border-blue-500 transition-colors duration-300 hover:border-blue-700" onClick={handleCreateRequest}>
+            Create Request
+          </button>
+
+      )}
+      {showModel && (
+          <div className="fixed bottom-4 right-4 bg-white rounded-md shadow-md p-4">
+            <p className="text-green-500">Request created successfully!</p>
+          </div>
+      )}
+    </div>
+  );
+};
+
+export default Planner;
