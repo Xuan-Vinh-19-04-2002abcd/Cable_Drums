@@ -1,11 +1,11 @@
 // CustomSwitch.js
 import React from 'react';
 import { Routes, Route } from 'react-router-dom';
-import AdminPage from '../components/Admin/AdminPage';
-import LoginForm from '../components/Login/LoginPage';
-import Planner from '../components/Planer/Planer';
-import Contractor from '../components/Project_Contractor/Contractor';
-import Vendor from '../components/Supply_Vendor/Vendor';
+import AdminPage from '../Pages/AdminPage';
+import LoginForm from '../Pages/LoginPage';
+import Planner from '../Pages/Planer';
+import Contractor from '../Pages/Contractor';
+import Vendor from '../Pages/Vendor';
 const CustomSwitch = () => {
 
   return (

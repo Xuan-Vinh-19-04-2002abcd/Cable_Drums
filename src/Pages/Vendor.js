@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import API_URL from '../../Config/Config';
-import LogoutButton from '../Button/Signup';
+import API_URL from '../Config/Config';
+import LogoutButton from '../components/Button/Signup';
+import UserAvatar from "../components/Button/Avatar";
 
 const Vendor = () => {
     const [contracts, setContracts] = useState([]);
@@ -84,7 +85,7 @@ const Vendor = () => {
         if (status === 'Collected') {
             return (
                 <div className="flex justify-center">
-                    <button className="border border-stone-500 py-1 px-9 bg-red-600 cursor-default rounded-md">
+                    <button className="border border-stone-500 py-1 px-9 bg-slate-400 text-stone-100 cursor-default rounded-md shadow-lg">
                         {status}
                     </button>
                 </div>
@@ -100,7 +101,7 @@ const Vendor = () => {
                 >
                     {statusOptions.map((option) => (
                         <option
-                            className="text-white"
+                            className="text-white "
                             key={option}
                             value={option}
                         >
@@ -112,13 +113,12 @@ const Vendor = () => {
         );
     };
     return (
-        <div className="w-screen h-screen box-border ">
-            <div className="w-screen h-screen flex flex-row justify-around">
+        <div className="box-border ">
+            <div className=" flex flex-row justify-around">
 
                 <div className="w-1/6 bg-amber-900 h-screen ">
                     <div className="flex flex-col items-center mt-2">
-                        <div className="w-24 h-24  rounded-full bg-cyan-800 mb-2"></div>
-                        <p className="text-white text-2xl font-mono">{loggedInUser.username}</p>
+                       <UserAvatar username={loggedInUser.username}></UserAvatar>
                     </div>
 
                    <div className="flex flex-col justify-center items-center h-screen">
@@ -137,20 +137,22 @@ const Vendor = () => {
                    </div>
                 </div>
                 {showContracts && (
-                        <div className="w-5/6 h-screen ">
+                        <div className="w-5/6">
                             <div className='flex justify-between mb-4 mt-2'>
                                 <p></p>
                                 <LogoutButton/>
                             </div>
                             <h1 className="text-2xl font-bold mb-4 text-center">Your Contracts</h1>
-                            <div className="overflow-x-auto w-1/2 mx-auto flex">
+                            <div className="overflow-x-auto w-[70%] mx-auto flex">
                                 <table className="w-full border-collapse">
                                     <thead>
                                     <tr className="bg-slate-400">
-                                        <th className="border border-gray-300 px-4 py-2">STT</th>
-                                        <th className="border border-gray-300 px-4 py-2">Start Date</th>
-                                        <th className="border border-gray-300 px-4 py-2">End Date</th>
-                                        <th className="border border-gray-300 px-4 py-2">Name Vendor</th>
+                                        <th className="border border-gray-300 px-4 py-2 ">STT</th>
+                                        <th className="border border-gray-300 px-4 py-2 ">Start Date</th>
+                                        <th className="border border-gray-300 px-4 py-2 ">End Date</th>
+                                        <th className="border border-gray-300 px-4 py-2 ">Quantity</th>
+                                        <th className="border border-gray-300 px-4 py-2 ">Contract expiration</th>
+                                        <th className="border border-gray-300 px-4 py-2">Status</th>
 
                                     </tr>
                                     </thead>
@@ -158,9 +160,11 @@ const Vendor = () => {
                                     {contracts.map((contract,index) => (
                                         <tr key={contract._id}>
                                             <td className="border border-gray-300 px-4 py-2">{index+1}</td>
-                                            <td className="border border-gray-300 px-4 py-2">{contract.startDate}</td>
+                                            <td className="border border-gray-300 px-4 py-2 ">{contract.startDate}</td>
                                             <td className="border border-gray-300 px-4 py-2">{contract.endDate}</td>
-                                            <td className="border border-gray-300 px-4 py-2">{contract.username}</td>
+                                            <td className="border border-gray-300 px-4 py-2 ">{contract.contractAmount}</td>
+                                            <td className="border border-gray-300 px-4 py-2 text-center">{Math.floor((new Date(contract.endDate)- new Date())/(1000 * 60 * 60 * 24))} days</td>
+                                            <td className="border border-gray-300 px-4 py-2"><p className="bg-red-600 rounded-md text-center text-white">Active</p></td>
                                         </tr>
                                     ))}
                                     </tbody>
