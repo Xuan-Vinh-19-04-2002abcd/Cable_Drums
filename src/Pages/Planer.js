@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import CableDrumRequest from './FormRequest';
-import API_URL from '../../Config/Config';
-import LogoutButton from '../Button/Signup';
+import CableDrumRequest from '../components/Planer/FormRequest';
+import API_URL from '../Config/Config';
+import LogoutButton from '../components/Button/Signup';
+import ContractTable from "../components/Planer/PlannerTable";
+import UserAvatar from "../components/Button/Avatar";
 
 const Planner = () => {
   const [contracts, setContracts] = useState([]);
@@ -68,35 +70,13 @@ const Planner = () => {
   return (
     <div className="container mx-auto px-4 py-8 min-h-screen bg-black opacity-90">
       <div className='flex justify-between mb-4'>
-          <div>
-            <div className="w-24 h-24  rounded-full bg-cyan-800 mb-2"></div>
-            <p className='px-2 py-2 rounded-2xl font-bold text-white '>{loggedInUser.username}</p>
-          </div>
+          <UserAvatar username={loggedInUser.username}></UserAvatar>
        <div> <LogoutButton/></div>
       </div>
       <div className="w-full mb-8">
         <h2 className="text-2xl font-bold mb-4 text-center">All Your Contracts</h2>
         <div className="overflow-x-auto">
-          <table className="w-[80%] border border-gray-300 mx-auto shadow-md">
-            <thead>
-              <tr className="bg-gray-200">
-                <th className="py-2 px-4 border">Start Date</th>
-                <th className="py-2 px-4 border">End Date</th>
-                <th className="py-2 px-4 border">Amount of Cable Drum</th>
-                <th className="py-2 px-4 border">Vendor</th>
-              </tr>
-            </thead>
-            <tbody>
-              {contracts.map((contract) => (
-                <tr key={contract.id}>
-                  <td className="py-2 px-4 border text-center text-white">{contract.startDate}</td>
-                  <td className="py-2 px-4 border text-center text-white">{contract.endDate}</td>
-                  <td className="py-2 px-4 border text-center text-white">{contract.contractAmount}</td>
-                  <td className="py-2 px-4 border text-center text-white">{contract.username}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+          <ContractTable contracts={contracts}></ContractTable>
         </div>
       </div>
 
@@ -128,8 +108,8 @@ const Planner = () => {
       )}
 
       {!showCableDrumRequest && (
-          <button className="bg-black hover:bg-red-600 bg-cyan-800   text-white font-bold py-2 px-4 rounded mt-4 ml-36 border border-dashed border-blue-500 transition-colors duration-300 hover:border-blue-700" onClick={handleCreateRequest}>
-            Create Request
+          <button className="bg-blue-900 hover:bg-red-600 text-white font-bold py-2 px-4 rounded mt-4 ml-36 border border-dashed border-blue-500 transition-colors duration-300 hover:border-blue-700" onClick={handleCreateRequest}>
+            Create Request +
           </button>
 
       )}
