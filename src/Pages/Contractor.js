@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import API_URL from '../../Config/Config';
-import LogoutButton from '../Button/Signup';
+import API_URL from '../Config/Config';
+import LogoutButton from '../components/Button/Signup';
 
 const Contractor = () => {
     const [requests, setRequests] = useState([]);
