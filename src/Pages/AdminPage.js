@@ -1,14 +1,15 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import API_URL from '../../Config/Config';
-import LogoutButton from '../Button/Signup';
-import CreateRoleForm from './FormRole';
-import { AiOutlineDelete } from 'react-icons/ai';
-import { AiOutlineUser,GrUserAdmin} from 'react-icons/ai';
+import API_URL from '../Config/Config';
+import LogoutButton from '../components/Button/Signup';
+import CreateRoleForm from '../components/Admin/FormRole';
+import UserTable from "../components/Admin/Table/UserTable";
+import Dashboard from "../components/Admin/CountUser/Dashboard";
 
 const AdminPage = () => {
   const [users, setUsers] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
+  const [showModel, setShowModel] = useState(false);
   const [showRoleForm, setShowRoleForm] = useState(false);
   const [plannerCount, setPlannerCount] = useState(0);
   const [vendorCount, setVendorCount] = useState(0);
@@ -88,9 +89,32 @@ const AdminPage = () => {
   const handleCloseModal = () => {
     setShowRoleForm(false);
   };
-  const handleDelete = (id) => {
-    // Xử lý logic xóa dữ liệu với ID cung cấp
+  const handleDelete = async (userId) => {
+    try {
+      const token = localStorage.getItem('token');
+
+
+      await axios.post(`${API_URL}/users`,
+          {userId:userId},
+          {
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${token}`,
+            },
+          }
+      );
+
+      const updatedUsers = await getUsers();
+      setUsers(updatedUsers);
+      setShowModel(true)
+      setTimeout(() => {
+        setShowModel(false);
+      }, 3000);
+    } catch (error) {
+      console.error('An error occurred while deleting user:', error);
+    }
   };
+
 
   return (
       <div className="flex flex-col lg:flex-row min-h-screen bg-amber-900">
@@ -127,59 +151,14 @@ const AdminPage = () => {
           </div>
           <div className="bg-blue-300 h-screen">
             <div className="overflow-x-auto flex flex-col ">
-              <table className="w-[50%] bg-white shadow-md rounded my-4 mx-auto">
-                <thead className="bg-gray-200 text-gray-700">
-                <tr>
-                  <th className="py-2 px-4">STT</th>
-                  <th className="py-2 px-4">Name</th>
-                  <th className="py-2 px-4">Role</th>
-                  <th className="py-2 px-4">Action</th>
-                </tr>
-                </thead>
-                <tbody className="text-gray-600">
-                {filteredUsers.map((user, index) => (
-                    <tr key={user.id} className={index % 2 === 0 ? 'bg-gray-100' : ''}>
-                      <td className="text-center font-mono py-1">{index + 1}</td>
-                      <td className="text-center font-mono">{user.username}</td>
-                      <td className="text-center font-mono">{user.role}</td>
-                      <td className="text-center font-bold">
-                        <button onClick={() => handleDelete(user._id)}>
-                          <AiOutlineDelete/>
-                        </button>
-                      </td>
-                    </tr>
-                ))}
-                </tbody>
-              </table>
+                    <UserTable filteredUsers={users} handleDelete={handleDelete}/>
               <div>
                 <div className='flex justify-around mt-8'>
-                  <div className="bg-green-800 p-4 rounded-lg shadow-lg w-1/5">
-                    <div className="flex items-center">
-                      <AiOutlineUser className="text-4xl mr-2 text-white" />
-                      <div>
-                        <h3 className="text-xl font-serif text-white ">Planner</h3>
-                        <p className="text-2xl font-serif text-white">{plannerCount}</p>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="bg-blue-900 p-4 rounded-lg shadow-lg w-1/5">
-                    <div className="flex items-center">
-                      <AiOutlineUser className="text-4xl mr-2 text-white" />
-                      <div>
-                        <h3 className="text-xl font-serif text-white ">Supper Vendor</h3>
-                        <p className="text-2xl font-serif text-white">{vendorCount}</p>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="bg-amber-900 p-4 rounded-lg shadow-lg w-1/5">
-                    <div className="flex items-center">
-                      <AiOutlineUser className="text-4xl mr-2 text-white" />
-                      <div>
-                        <h3 className="text-xl font-serif text-white ">Contractor</h3>
-                        <p className="text-2xl font-serif text-white">{contractorCount}</p>
-                      </div>
-                    </div>
-                  </div>
+                  <Dashboard
+                      plannerCount={plannerCount}
+                      vendorCount={vendorCount}
+                      contractorCount={contractorCount}
+                  />
                 </div>
               </div>
             </div>
@@ -209,6 +188,11 @@ const AdminPage = () => {
 
                 <CreateRoleForm handleCreateClose={handleCloseModal} handleCreateSuccess={handleCreateUserSuccess} />
               </div>
+            </div>
+        )}
+        {showModel && (
+            <div className="fixed bottom-4 right-4 bg-white rounded-md shadow-md p-4">
+              <p className="text-red-600 font-bold">Delete successfully!</p>
             </div>
         )}
       </div>
