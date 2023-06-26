@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import API_URL from '../Config/Config';
 import LogoutButton from '../components/Button/Signup';
+import StructionBoad from "../components/StructionBoad/StructionBoad";
 
 const Contractor = () => {
     const [requests, setRequests] = useState([]);
@@ -109,7 +110,7 @@ const Contractor = () => {
                 <div> <LogoutButton/></div>
             </div>
             <h1 className="text-2xl font-bold mb-4 text-center">Contractor Requests</h1>
-            <div className="overflow-x-auto">
+            <div className="overflow-x-auto mb-8">
                 <table className="w-[85%] border border-gray-300 mx-auto">
                     <thead>
                     <tr className="">
@@ -135,6 +136,7 @@ const Contractor = () => {
                     </tbody>
                 </table>
             </div>
+            <StructionBoad/>
             {showModel && (
                 <div className="fixed bottom-4 right-4 bg-white rounded-md shadow-md p-4">
                     <p className="text-green-500">Status updated successfully!</p>
