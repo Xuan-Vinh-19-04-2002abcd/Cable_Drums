@@ -3,6 +3,8 @@ import axios from 'axios';
 import API_URL from '../Config/Config';
 import LogoutButton from '../components/Button/Signup';
 import UserAvatar from "../components/Button/Avatar";
+import { getContracts, getRequests, updateRequestStatus } from '../Utils/VendorService';
+import StructionBoad from "../components/StructionBoad/StructionBoad";
 
 const Vendor = () => {
     const [contracts, setContracts] = useState([]);
@@ -19,61 +21,37 @@ const Vendor = () => {
     };
 
     useEffect(() => {
-        const getContracts = async () => {
-            try {
-                const response = await axios.post(`${API_URL}/contracts/vendor`,{suppervendorId:loggedInUser._id}, config);
-                console.log(response.data)
-                setContracts(response.data);
-            } catch (error) {
-                console.log(error);
-            }
+        const fetchData = async () => {
+            const contractData = await getContracts(loggedInUser._id, token);
+            const requestData = await getRequests(loggedInUser._id, token);
+            setContracts(contractData);
+            setRequests(requestData);
         };
 
-        const getRequests = async () => {
-            try {
-                const response = await axios.post(
-                    `${API_URL}/requests/vendorRequest`,
-                    {
-                        supperVendorId: loggedInUser._id,
-                    },
-                    config
-                );
-                console.log(response.data)
-                setRequests(response.data);
-            } catch (error) {
-                console.log(error);
-            }
-        };
-
-        getContracts();
-        getRequests();
-    }, [loggedInUser._id]);
+        fetchData();
+    }, [loggedInUser._id, token]);
     const handleStatusChange = async (event, requestId) => {
         const newStatus = event.target.value;
 
         try {
-            const response = await axios.post(
-                `${API_URL}/requests/status`,
-                { requestId: requestId, status: newStatus },
-                config
-            );
-            const updatedRequest = response.data;
+            const updatedRequest = await updateRequestStatus(requestId, newStatus, config);
 
-            setRequests((prevRequests) => {
-                const updatedRequests = prevRequests.map((request) => {
-                    if (request._id === updatedRequest._id) {
-                        return updatedRequest;
-                    }
-                    return request;
+            if (updatedRequest) {
+                setRequests((prevRequests) => {
+                    const updatedRequests = prevRequests.map((request) => {
+                        if (request._id === updatedRequest._id) {
+                            return updatedRequest;
+                        }
+                        return request;
+                    });
+                    return updatedRequests;
                 });
-                return updatedRequests;
-            });
+                setShowModel(true);
 
-            setShowModel(true);
-
-            setTimeout(() => {
-                setShowModel(false);
-            }, 3000);
+                setTimeout(() => {
+                    setShowModel(false);
+                }, 3000);
+            }
         } catch (error) {
             console.log(error);
         }
@@ -159,10 +137,10 @@ const Vendor = () => {
                                     <tbody>
                                     {contracts.map((contract,index) => (
                                         <tr key={contract._id}>
-                                            <td className="border border-gray-300 px-4 py-2">{index+1}</td>
-                                            <td className="border border-gray-300 px-4 py-2 ">{contract.startDate}</td>
-                                            <td className="border border-gray-300 px-4 py-2">{contract.endDate}</td>
-                                            <td className="border border-gray-300 px-4 py-2 ">{contract.contractAmount}</td>
+                                            <td className="border border-gray-300 px-4 py-2 text-center">{index+1}</td>
+                                            <td className="border border-gray-300 px-4 py-2 text-center">{contract.startDate}</td>
+                                            <td className="border border-gray-300 px-4 py-2 text-center">{contract.endDate}</td>
+                                            <td className="border border-gray-300 px-4 py-2 text-center">{contract.contractAmount}</td>
                                             <td className="border border-gray-300 px-4 py-2 text-center">{Math.floor((new Date(contract.endDate)- new Date())/(1000 * 60 * 60 * 24))} days</td>
                                             <td className="border border-gray-300 px-4 py-2"><p className="bg-red-600 rounded-md text-center text-white">Active</p></td>
                                         </tr>
@@ -179,7 +157,7 @@ const Vendor = () => {
                             <LogoutButton/>
                         </div>
                         <h1 className="text-2xl font-bold mb-4 text-center">All Your Requests</h1>
-                        <div className="overflow-x-auto">
+                        <div className="overflow-x-auto mb-8">
                             <table className="border-collapse w-[85%] mx-auto">
                                 <thead>
                                 <tr className='bg-slate-400'>
@@ -194,11 +172,11 @@ const Vendor = () => {
                                 <tbody>
                                 {requests.map((request,index)=> (
                                     <tr key={request._id}>
-                                        <td className="border border-gray-300 px-4 py-2">{index+1}</td>
-                                        <td className="border border-gray-300 px-4 py-2">{request.plannerUsername}</td>
-                                        <td className="border border-gray-300 px-4 py-2">{request.quantity}</td>
-                                        <td className="border border-gray-300 px-4 py-2">{request.contractorUsername}</td>
-                                        <td className= "border border-gray-300 px-4 py-2">
+                                        <td className="border border-gray-300 px-4 py-2 text-center">{index+1}</td>
+                                        <td className="border border-gray-300 px-4 py-2 text-center">{request.plannerUsername}</td>
+                                        <td className="border border-gray-300 px-4 py-2 text-center">{request.quantity}</td>
+                                        <td className="border border-gray-300 px-4 py-2 text-center">{request.contractorUsername}</td>
+                                        <td className= "border border-gray-300 px-4 py-2 text-center">
                                             {getRequestStatus(request.status, request._id)}
                                         </td>
 
@@ -207,6 +185,7 @@ const Vendor = () => {
                                 </tbody>
                             </table>
                         </div>
+                        <StructionBoad/>
                     </div>
                 )}
 
