@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import axios from 'axios';
-import API_URL from '../Config/Config';
+import { getUsers, deleteUser } from '../Utils/AdminService';
 import LogoutButton from '../components/Button/Signup';
 import CreateRoleForm from '../components/Admin/FormRole';
 import UserTable from "../components/Admin/Table/UserTable";
@@ -11,40 +10,6 @@ const AdminPage = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [showModel, setShowModel] = useState(false);
   const [showRoleForm, setShowRoleForm] = useState(false);
-  const [plannerCount, setPlannerCount] = useState(0);
-  const [vendorCount, setVendorCount] = useState(0);
-  const [contractorCount, setContractorCount] = useState(0);
-
-  const getUsers = async (searchText) => {
-    try {
-      const token = localStorage.getItem('token');
-
-      const response = await axios.post(
-          `${API_URL}/users/search`,
-          { text: searchText },
-          {
-            headers: {
-              'Content-Type': 'application/json',
-              Authorization: `Bearer ${token}`,
-            },
-          }
-      );
-      return response.data;
-    } catch (error) {
-      console.error('An error occurred while fetching users:', error);
-      throw error;
-    }
-  };
-
-  useEffect(() => {
-    getUsers("")
-        .then((data) => {
-          setUsers(data);
-        })
-        .catch((error) => {
-          console.error(error);
-        });
-  }, []);
 
   const handleCreateUserSuccess = (newUser) => {
     setUsers((prevUsers) => [...prevUsers, newUser]);
@@ -53,28 +18,34 @@ const AdminPage = () => {
   const handleSearch = (event) => {
     const searchText = event.target.value;
     setSearchTerm(searchText);
-
-    getUsers(searchText)
-        .then((data) => {
-          setUsers(data);
-        })
-        .catch((error) => {
-          console.error(error);
-        });
   };
-  useEffect(() => {
-    const countRoles = () => {
-      const plannerCount = users.filter((user) => user.role === 'Planner').length;
-      const vendorCount = users.filter((user) => user.role === 'Vendor').length;
-      const contractorCount = users.filter((user) => user.role === 'Contractor').length;
 
-      setPlannerCount(plannerCount);
-      setVendorCount(vendorCount);
-      setContractorCount(contractorCount);
+  const handleDelete = async (userId) => {
+    try {
+      await deleteUser(userId);
+      const updatedUsers = await getUsers('');
+      setUsers(updatedUsers);
+      setShowModel(true);
+      setTimeout(() => {
+        setShowModel(false);
+      }, 3000);
+    } catch (error) {
+      console.error('An error occurred while deleting user:', error);
+    }
+  };
+
+  useEffect(() => {
+    const fetchUsers = async (searchText) => {
+      try {
+        const data = await getUsers(searchText);
+        setUsers(data);
+      } catch (error) {
+        console.error(error);
+      }
     };
 
-    countRoles();
-  }, [users]);
+    fetchUsers("");
+  }, []);
 
   const filteredUsers = users.filter(
       (user) =>
@@ -89,47 +60,20 @@ const AdminPage = () => {
   const handleCloseModal = () => {
     setShowRoleForm(false);
   };
-  const handleDelete = async (userId) => {
-    try {
-      const token = localStorage.getItem('token');
-
-
-      await axios.post(`${API_URL}/users`,
-          {userId:userId},
-          {
-            headers: {
-              'Content-Type': 'application/json',
-              Authorization: `Bearer ${token}`,
-            },
-          }
-      );
-
-      const updatedUsers = await getUsers();
-      setUsers(updatedUsers);
-      setShowModel(true)
-      setTimeout(() => {
-        setShowModel(false);
-      }, 3000);
-    } catch (error) {
-      console.error('An error occurred while deleting user:', error);
-    }
-  };
-
 
   return (
       <div className="flex flex-col lg:flex-row min-h-screen bg-amber-900">
         <div className="bg-gray-800 w-full lg:w-1/6 lg:min-h-screen">
           <div className="flex flex-col items-center justify-center h-screen">
-
             <p className="text-white text-3xl font-semibold font-mono">Admin</p>
           </div>
         </div>
-        <div className="w-full lg:w-5/6 ">
+        <div className="w-full lg:w-5/6">
           <div className="mt-10 flex justify-end mr-2">
             <LogoutButton />
           </div>
           <div className="md:mt-8 mt-4">
-            <div className="mb-4 flex justify-between ">
+            <div className="mb-4 flex justify-between">
               {!showRoleForm && (
                   <button
                       className="flex-start px-4 py-2 rounded-md text-white bg-black mx-3 font-mono"
@@ -150,14 +94,14 @@ const AdminPage = () => {
             <div className="w-full border-t-2 border-gray-500"></div>
           </div>
           <div className="bg-blue-300 h-screen">
-            <div className="overflow-x-auto flex flex-col ">
-                    <UserTable filteredUsers={users} handleDelete={handleDelete}/>
+            <div className="overflow-x-auto flex flex-col">
+              <UserTable filteredUsers={filteredUsers} handleDelete={handleDelete} />
               <div>
                 <div className='flex justify-around mt-8'>
                   <Dashboard
-                      plannerCount={plannerCount}
-                      vendorCount={vendorCount}
-                      contractorCount={contractorCount}
+                      plannerCount={users.filter(user => user.role === 'Planner').length}
+                      vendorCount={users.filter(user => user.role === 'Vendor').length}
+                      contractorCount={users.filter(user => user.role === 'Contractor').length}
                   />
                 </div>
               </div>
